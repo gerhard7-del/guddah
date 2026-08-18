@@ -399,6 +399,9 @@
   // moves the button to a random spot on screen for each entry in dodgeTexts,
   // then fires onComplete on the following click.
   function dodgeButton(button){
+  if (button.parentElement !== document.body) {
+    document.body.appendChild(button); // escape any transformed ancestor (fixes the disappearing bug)
+  }
   const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
   const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
   const w = button.offsetWidth;
@@ -412,7 +415,7 @@
   button.style.left = x + 'px';
   button.style.top = y + 'px';
   button.style.margin = '0';
-  button.style.zIndex = '30';
+  button.style.zIndex = '9999';
   button.classList.remove('dodge-pop');
   void button.offsetWidth;
   button.classList.add('dodge-pop');
@@ -423,10 +426,11 @@ function makeDodgy(button, dodgeTexts, onComplete){
   function handleClick(){
     clicks++;
     if(clicks <= dodgeTexts.length){
-      button.textContent = dodgeTexts[clicks - 1]; // set text BEFORE measuring, so sizing is accurate
+      button.textContent = dodgeTexts[clicks - 1];
       dodgeButton(button);
     } else {
       button.removeEventListener('click', handleClick);
+      button.style.display = 'none'; // it now lives outside its stage, so hide it manually
       onComplete();
     }
   }
