@@ -177,7 +177,9 @@
     box-shadow: 0 10px 22px -8px rgba(225, 79, 108, 0.55);
     animation: pulse 1.8s ease-in-out infinite;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-    white-space: nowrap;
+    white-space: normal;
+    max-width: min(80vw, 300px);
+    text-align: center;
   }
   button.tap-btn:hover{
     transform: translateY(-2px) scale(1.03);
@@ -397,38 +399,39 @@
   // moves the button to a random spot on screen for each entry in dodgeTexts,
   // then fires onComplete on the following click.
   function dodgeButton(button){
-    const w = button.offsetWidth;
-    const h = button.offsetHeight;
-    const padding = 24;
-    const maxX = Math.max(window.innerWidth - w - padding * 2, 10);
-    const maxY = Math.max(window.innerHeight - h - padding * 2, 10);
-    const x = padding + Math.random() * maxX;
-    const y = padding + Math.random() * maxY;
-    button.style.position = 'fixed';
-    button.style.left = x + 'px';
-    button.style.top = y + 'px';
-    button.style.margin = '0';
-    button.style.zIndex = '30';
-    button.classList.remove('dodge-pop');
-    void button.offsetWidth; // restart animation
-    button.classList.add('dodge-pop');
-  }
+  const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const w = button.offsetWidth;
+  const h = button.offsetHeight;
+  const padding = 28;
+  const maxX = Math.max(vw - w - padding * 2, 0);
+  const maxY = Math.max(vh - h - padding * 2, 0);
+  const x = padding + Math.random() * maxX;
+  const y = padding + Math.random() * maxY;
+  button.style.position = 'fixed';
+  button.style.left = x + 'px';
+  button.style.top = y + 'px';
+  button.style.margin = '0';
+  button.style.zIndex = '30';
+  button.classList.remove('dodge-pop');
+  void button.offsetWidth;
+  button.classList.add('dodge-pop');
+}
 
-  function makeDodgy(button, dodgeTexts, onComplete){
-    let clicks = 0;
-    function handleClick(){
-      clicks++;
-      if(clicks <= dodgeTexts.length){
-        dodgeButton(button);
-        button.textContent = dodgeTexts[clicks - 1];
-      } else {
-        button.removeEventListener('click', handleClick);
-        onComplete();
-      }
+function makeDodgy(button, dodgeTexts, onComplete){
+  let clicks = 0;
+  function handleClick(){
+    clicks++;
+    if(clicks <= dodgeTexts.length){
+      button.textContent = dodgeTexts[clicks - 1]; // set text BEFORE measuring, so sizing is accurate
+      dodgeButton(button);
+    } else {
+      button.removeEventListener('click', handleClick);
+      onComplete();
     }
-    button.addEventListener('click', handleClick);
   }
-
+  button.addEventListener('click', handleClick);
+}
   // Stage 1 -> envelope -> stage 3, but she has to "catch" the button once first
   makeDodgy(tapOpen, ["😅 oops, you missed — try again"], () => {
     stage1.classList.remove('active');
